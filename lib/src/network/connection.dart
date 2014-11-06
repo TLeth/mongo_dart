@@ -1,7 +1,7 @@
 part of mongo_dart;
 
 class _Connection {
-  final _log= new Logger('Connection');
+  final _log = new Logger('Connection');
   _ConnectionManager _manager;
   ServerConfig serverConfig;
   Socket socket;
@@ -12,21 +12,19 @@ class _Connection {
   bool connected = false;
   bool _closed = false;
   bool isMaster = false;
-  
+
   _Connection(this._manager, [this.serverConfig]) {
     if (serverConfig == null) {
       serverConfig = new ServerConfig();
     }
   }
-  
+
   Future<bool> connect() {
     Completer completer = new Completer();
     Socket.connect(serverConfig.host, serverConfig.port).then((Socket _socket) {
-      // Socket connected. 
+      // Socket connected.
       socket = _socket;
-      _socketSubscription = socket
-        .transform(new MongoMessageHandler().transformer)
-        .listen(_receiveReply,onError: (e) {
+      _socketSubscription = socket.transform(new MongoMessageHandler().transformer).listen(_receiveReply, onError: (e) {
         print("Socket error ${e}");
 
         //completer.completeError(e);
@@ -37,7 +35,7 @@ class _Connection {
       });
       connected = true;
       completer.complete(true);
-    }).catchError( (err) {
+    }).catchError((err) {
       completer.completeError(err);
     });
     return completer.future;
@@ -47,7 +45,7 @@ class _Connection {
     _closed = true;
     return socket.close();
   }
-  
+
   _sendBuffer() {
     _log.fine('_sendBuffer ${!_sendQueue.isEmpty}');
     List<int> message = [];
@@ -57,7 +55,7 @@ class _Connection {
     }
     socket.add(message);
   }
-  
+
   Future<MongoReplyMessage> query(MongoMessage queryMessage) {
     Completer completer = new Completer();
     if (!_closed) {
@@ -92,7 +90,7 @@ class _Connection {
     _log.fine(reply.toString());
     Completer completer = _replyCompleters.remove(reply.responseTo);
     _pendingQueries.remove(reply.responseTo);
-    if (completer != null){
+    if (completer != null) {
       _log.fine('Completing $reply');
       completer.complete(reply);
     } else {

@@ -6,7 +6,7 @@ class _Statics {
     if (_requestId == null) {
       _requestId = 1;
     }
-    
+
     return ++_requestId;
   }
 }
@@ -22,30 +22,30 @@ class MongoMessage {
   static final KillCursors = 2007;
   int _messageLength;
   int _requestId;
-  
+
   int get requestId {
     if (_requestId == null) {
       _requestId = _Statics.nextRequestId;
     }
-    
+
     return _requestId;
   }
-  
+
   int responseTo;
   int opcode = MongoMessage.Reply;
-  
+
   int get messageLength {
     throw new MongoDartError('Must be implemented');
   }
-  
+
   BsonBinary serialize() {
     throw new MongoDartError('Must be implemented');
   }
-  
+
   MongoMessage deserialize(BsonBinary buffer) {
     throw new MongoDartError('Must be implemented');
   }
-  
+
   readMessageHeaderFrom(BsonBinary buffer) {
     _messageLength = buffer.readInt32();
     _requestId = buffer.readInt32();
@@ -61,12 +61,12 @@ class MongoMessage {
     buffer.writeInt(requestId);
     buffer.writeInt(0); // responseTo not used in requests sent by client
     buffer.writeInt(opcode);
-    if (messageLength < 0){
+    if (messageLength < 0) {
       throw new MongoDartError('Error in message length');
     }
   }
-  
-  String toString(){
+
+  String toString() {
     throw new MongoDartError('must be implemented');
   }
 }

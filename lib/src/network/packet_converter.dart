@@ -22,12 +22,12 @@ class PacketConverter {
       handleBody();
     }
   }
-  
+
   handleHeader() {
-    if (bytesAvailable()>=4) {
+    if (bytesAvailable() >= 4) {
       headerMode = false;
       lengthBuffer.rewind();
-      readIntoBuffer(lengthBuffer.byteList,0);
+      readIntoBuffer(lengthBuffer.byteList, 0);
       int len = lengthBuffer.readInt32();
       if (len > MAX_DOC_SIZE) {
         throw new MongoDartError('Message length $len over maximum document size');
@@ -36,23 +36,23 @@ class PacketConverter {
       handleBody();
     }
   }
-  
+
   handleBody() {
-    if (bytesAvailable()>=messageBuffer.length-4) {
+    if (bytesAvailable() >= messageBuffer.length - 4) {
       headerMode = true;
-      messageBuffer.setRange(0,4,lengthBuffer.byteList);
-      readIntoBuffer(messageBuffer,4);
+      messageBuffer.setRange(0, 4, lengthBuffer.byteList);
+      readIntoBuffer(messageBuffer, 4);
       messagesConverted++;
       messages.addLast(messageBuffer);
       handleHeader();
     }
   }
-  
+
   /// Length of all packets with current read position on first packet subtracted
-  int bytesAvailable() => packets.fold(- readPos,(value, element) => value + element.length);
-  
+  int bytesAvailable() => packets.fold(-readPos, (value, element) => value + element.length);
+
   void readIntoBuffer(List<int> buffer, int pos) {
-    if(buffer.length - pos > bytesAvailable()) {
+    if (buffer.length - pos > bytesAvailable()) {
 //      print('$this $buffer $pos');
       throw new MongoDartError('Bad state. Read buffer too big');
     }
@@ -64,10 +64,10 @@ class PacketConverter {
       throw new MongoDartError('Bad state. Buffer was not written fully');
     }
   }
-  
+
   int _readPacketIntoBuffer(List<int> buffer, int pos) {
-    int bytesRead = min(buffer.length - pos,packets.first.length - readPos);
-    buffer.setRange(pos,pos+bytesRead,packets.first,readPos);
+    int bytesRead = min(buffer.length - pos, packets.first.length - readPos);
+    buffer.setRange(pos, pos + bytesRead, packets.first, readPos);
     if (readPos + bytesRead == packets.first.length) {
       readPos = 0;
       packets.removeFirst();
@@ -76,8 +76,8 @@ class PacketConverter {
     }
     return bytesRead;
   }
-  
+
   String toString() => 'PacketConverter(readPos: $readPos, headerMode: $headerMode, packets: $packets)';
-  
+
   bool get isClear => this.packets.isEmpty && messages.isEmpty && headerMode;
 }

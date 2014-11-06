@@ -3,9 +3,9 @@ part of mongo_dart;
 class _ConnectionManager {
   final _log = new Logger('ConnectionManager');
   final db;
-  final _connectionPool = new Map<String,_Connection>();
-  final replyCompleters = new Map<int,Completer<MongoReplyMessage>>();
-  final sendQueue       = new Queue<MongoMessage>();
+  final _connectionPool = new Map<String, _Connection>();
+  final replyCompleters = new Map<int, Completer<MongoReplyMessage>>();
+  final sendQueue = new Queue<MongoMessage>();
   _Connection _masterConnection;
 
   _ConnectionManager(this.db);
@@ -35,7 +35,7 @@ class _ConnectionManager {
     });
   }
 
-  Future open(WriteConcern writeConcern){
+  Future open(WriteConcern writeConcern) {
     return Future.forEach(_connectionPool.keys, (hostUrl) {
       var connection = _connectionPool[hostUrl];
       return _connect(connection);
@@ -45,8 +45,8 @@ class _ConnectionManager {
     });
   }
 
-  Future close(){
-    while (!sendQueue.isEmpty){
+  Future close() {
+    while (!sendQueue.isEmpty) {
       masterConnection._sendBuffer();
     }
     sendQueue.clear();

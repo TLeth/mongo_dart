@@ -5,7 +5,7 @@ class DbCollection {
   String collectionName;
   DbCollection(this.db, this.collectionName) {}
   String fullName() => "${db.databaseName}.$collectionName";
-  
+
   Future save(Map document, {WriteConcern writeConcern}) {
     var id;
     bool createId = false;
@@ -16,7 +16,9 @@ class DbCollection {
       }
     }
     if (id != null) {
-      return update({"_id": id}, document, writeConcern: writeConcern);
+      return update({
+        "_id": id
+      }, document, writeConcern: writeConcern);
     } else {
       if (createId) {
         document["_id"] = new ObjectId();
@@ -24,15 +26,15 @@ class DbCollection {
       return insert(document, writeConcern: writeConcern);
     }
   }
-  
+
   Future insertAll(List<Map> documents, {WriteConcern writeConcern}) {
     return new Future.sync(() {
-      MongoInsertMessage insertMessage = new MongoInsertMessage(fullName(),documents);
+      MongoInsertMessage insertMessage = new MongoInsertMessage(fullName(), documents);
       db.executeMessage(insertMessage, writeConcern);
       return db._getAcknowledgement(writeConcern: writeConcern);
     });
   }
-  
+
   Future update(selector, document, {bool upsert: false, bool multiUpdate: false, WriteConcern writeConcern}) {
     return new Future.sync(() {
       int flags = 0;
@@ -43,8 +45,7 @@ class DbCollection {
         flags |= 0x2;
       }
 
-      MongoUpdateMessage message = new MongoUpdateMessage(fullName(), 
-          _selectorBuilder2Map(selector), document, flags);
+      MongoUpdateMessage message = new MongoUpdateMessage(fullName(), _selectorBuilder2Map(selector), document, flags);
       db.executeMessage(message, writeConcern);
       return db._getAcknowledgement(writeConcern: writeConcern);
     });
@@ -69,22 +70,21 @@ class DbCollection {
     cursor.close();
     return result;
   }
-  
+
   Future drop() => db.dropCollection(collectionName);
-  
+
   Future remove([selector, WriteConcern writeConcern]) => db.removeFromCollection(collectionName, _selectorBuilder2Map(selector), writeConcern);
-  
+
   Future<int> count([selector]) {
-    return db.executeDbCommand(DbCommand.createCountCommand(db,collectionName,_selectorBuilder2Map(selector))).then((reply){
+    return db.executeDbCommand(DbCommand.createCountCommand(db, collectionName, _selectorBuilder2Map(selector))).then((reply) {
       return new Future.value(reply["n"].toInt());
     });
   }
-  
-  Future distinct(String field, [selector]) =>
-    db.executeDbCommand(DbCommand.createDistinctCommand(db,collectionName,field,_selectorBuilder2Map(selector)));
-  
-  Future aggregate(List pipeline){
-    var cmd = DbCommand.createAggregateCommand(db,collectionName,pipeline);
+
+  Future distinct(String field, [selector]) => db.executeDbCommand(DbCommand.createDistinctCommand(db, collectionName, field, _selectorBuilder2Map(selector)));
+
+  Future aggregate(List pipeline) {
+    var cmd = DbCommand.createAggregateCommand(db, collectionName, pipeline);
     return db.executeDbCommand(cmd);
   }
   Stream<Map> aggregateToStream(List pipeline, {Map cursorOptions: const {}}) {

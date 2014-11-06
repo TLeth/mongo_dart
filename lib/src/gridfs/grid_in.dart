@@ -29,7 +29,9 @@ class GridIn extends GridFSFile {
     if (!savedChunks) {
       result = saveChunks(chunkSize);
     } else {
-      result = new Future.value({'ok': 1.0});
+      result = new Future.value({
+        'ok': 1.0
+      });
     }
     return result;
   }
@@ -37,11 +39,11 @@ class GridIn extends GridFSFile {
   Future<Map> saveChunks([int chunkSize = 0]) {
     List<Future> futures = new List();
     Completer completer = new Completer();
-    
+
     _onDone() {
       Future.wait(futures).then((list) {
         return finishData();
-      }).then((map){
+      }).then((map) {
         completer.complete({});
       });
     }
@@ -53,21 +55,25 @@ class GridIn extends GridFSFile {
     }
     if (chunkSize <= 0 || chunkSize > GridFS.MAX_CHUNKSIZE) {
       throw new MongoDartError('chunkSize must be greater than zero and less than or equal to GridFS.MAX_CHUNKSIZE');
-    }    
+    }
     input.listen((data) {
-        futures.add(dumpBuffer(data));
-        }, onDone: _onDone);    
+      futures.add(dumpBuffer(data));
+    }, onDone: _onDone);
     return completer.future;
   }
   // TODO(tsander): OutputStream??
 
-  Future<Map> dumpBuffer( List<int> writeBuffer ) {
+  Future<Map> dumpBuffer(List<int> writeBuffer) {
     if (writeBuffer.length == 0) {
       // Chunk is empty, may be last chunk
       return new Future.value({});
     }
 
-    Map chunk = {"files_id" : id, "n" : currentChunkNumber, "data": new BsonBinary.from(writeBuffer)};
+    Map chunk = {
+      "files_id": id,
+      "n": currentChunkNumber,
+      "data": new BsonBinary.from(writeBuffer)
+    };
     currentChunkNumber++;
     totalBytes += writeBuffer.length;
     messageDigester.add(writeBuffer);
